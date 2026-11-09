@@ -13,6 +13,11 @@ const heading = (line: string, section: "setter" | "athlete") => {
     : /^atletas?$/i.test(value);
 };
 
+function isOtherSectionHeading(line: string): boolean {
+  const value = line.trim().replace(/^\*+|\*+$/g, "").replace(/:$/, "").trim();
+  return /^(?:espera|reservas?|lista de espera)$/i.test(value);
+}
+
 function ignoredLine(line: string): boolean {
   const value = line.trim().replace(/^\*+|\*+$/g, "").trim();
   return (
@@ -47,6 +52,7 @@ export function parseWhatsAppList(text: string): ParsedData {
     const line = rawLine.trim().replace(/^\*+|\*+$/g, "").trim();
     if (heading(line, "setter")) { active = "setter"; continue; }
     if (heading(line, "athlete")) { active = "athlete"; continue; }
+    if (isOtherSectionHeading(line)) { active = null; continue; }
     if (!active || ignoredLine(line)) continue;
     sections[active].push(line.replace(/^\s*\d+[.)]\s*/, "").trim());
   }

@@ -80,6 +80,33 @@ describe("aceitação do produto", () => {
     expect(result.warnings.some((warning) => warning.includes("Levantador"))).toBe(false);
   });
 
+  it("ignora a seção Espera, sem incluir reservas entre os atletas", () => {
+    const message = [
+      "TVôlei Domingo na Estevão Gomes:",
+      "14:00 as 17:00h",
+      "PIX: 80786812249",
+      "Valor 7,00:",
+      "",
+      "Levantadores",
+      "1. Ton",
+      "2. Kaue",
+      "3. André",
+      "",
+      "Atletas:",
+      ...["Kelly", "Fernanda", "Vagner", "MW", "Maciel", "Roseli", "Geyse", "Sheilla", "Abraão", "Jim", "Jhon", "Ramon", "Rairuz afuc", "Rafa afuc", "Andreza"].map((name, index) => `${index + 1}. ${name}`),
+      "",
+      "Espera:",
+      "1. Reserva 1",
+      "2. Reserva 2",
+    ].join("\n");
+
+    const result = parseWhatsAppList(message);
+    expect(result.errors).toEqual([]);
+    expect(result.players).toHaveLength(18);
+    expect(result.players.some((player) => player.name.startsWith("Reserva"))).toBe(false);
+    expect(result.players.filter((player) => player.role === "athlete").map((player) => player.name)).toContain("Andreza");
+  });
+
   it("802 — cria três times de seis, cada um com um levantador e cinco atletas", () => {
     const result = drawTeams(balancedPlayers());
     expect(result.errors).toEqual([]);

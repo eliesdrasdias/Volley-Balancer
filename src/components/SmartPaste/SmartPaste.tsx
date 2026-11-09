@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import type { Player } from "../../types";
 import { parseWhatsAppList } from "./parser";
 
-export function SmartPaste({ onParseComplete }: { onParseComplete: (players: Player[]) => void }) {
+export function SmartPaste({ onParseComplete, onClear }: { onParseComplete: (players: Player[]) => void; onClear: () => void }) {
   const [text, setText] = useState("");
   const [parsed, setParsed] = useState<Player[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
@@ -21,7 +21,8 @@ export function SmartPaste({ onParseComplete }: { onParseComplete: (players: Pla
     setParsed([]);
     setErrors([]);
     setWarnings([]);
-  }, []);
+    onClear();
+  }, [onClear]);
 
   return (
     <section className="space-y-4" aria-labelledby="smart-paste-label">
@@ -47,7 +48,7 @@ export function SmartPaste({ onParseComplete }: { onParseComplete: (players: Pla
           Processar lista
         </button>
         <button type="button" onClick={clear} disabled={!text && !parsed.length} className="min-h-11 rounded-lg border border-primary-dark/20 px-4 py-2.5 text-primary-dark hover:bg-primary-dark/5 disabled:opacity-50 sm:flex-none">
-          Limpar
+          Limpar lista e jogadores
         </button>
       </div>
 

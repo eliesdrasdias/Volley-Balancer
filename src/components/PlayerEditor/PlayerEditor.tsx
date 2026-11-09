@@ -22,7 +22,7 @@ export function PlayerEditor({ players, onPlayersChange }: PlayerEditorProps) {
     <section className="mt-6 space-y-4" aria-labelledby="player-editor-title">
       <div>
         <h3 id="player-editor-title" className="text-base font-bold">Editar jogadores</h3>
-        <p className="mt-1 text-sm text-primary-dark/65">Ajuste o sexo dos jogadores e o nível dos atletas. As alterações são salvas automaticamente neste dispositivo.</p>
+        <p className="mt-1 text-sm text-primary-dark/65">Ajuste o sexo dos jogadores e o nível dos atletas nesta rodada.</p>
       </div>
 
       <div>

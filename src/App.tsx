@@ -1,30 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { SmartPaste } from "./components/SmartPaste/SmartPaste";
 import { PlayerEditor } from "./components/PlayerEditor/PlayerEditor";
 import { TeamCard } from "./components/TeamCard/TeamCard";
 import { drawTeams } from "./components/Algorithm/draw";
 import { ExportButton } from "./components/ExportButton/ExportButton";
 import type { Player, State } from "./types";
-import { clearState, loadState, saveState } from "./store/storage";
-
-function getInitialState(): State {
-  const navigation = window.performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
-  if (navigation?.type === "reload") {
-    clearState();
-    return { players: [], teams: null };
-  }
-  return loadState();
-}
 
 export default function App() {
-  const [state, setState] = useState<State>(getInitialState);
+  const [state, setState] = useState<State>({ players: [], teams: null });
   const [drawErrors, setDrawErrors] = useState<string[]>([]);
   const [drawWarnings, setDrawWarnings] = useState<string[]>([]);
   const teamsRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    saveState(state);
-  }, [state]);
 
   const handleParseComplete = useCallback((players: Player[]) => {
     setState((current) => ({ ...current, players, teams: null }));
@@ -34,6 +20,12 @@ export default function App() {
 
   const handlePlayersChange = useCallback((players: Player[]) => {
     setState((current) => ({ ...current, players, teams: null }));
+    setDrawErrors([]);
+    setDrawWarnings([]);
+  }, []);
+
+  const handleClear = useCallback(() => {
+    setState({ players: [], teams: null });
     setDrawErrors([]);
     setDrawWarnings([]);
   }, []);
@@ -56,10 +48,15 @@ export default function App() {
               <p className="text-xs text-white/80">Times de vôlei justos em 1 clique</p>
             </div>
           </div>
-          <span className="hidden rounded-full bg-white/15 px-3 py-1.5 text-xs sm:inline-flex">{state.players.length} jogador(es) salvo(s)</span>
-          <span className="inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-white/15 px-2 text-sm font-semibold sm:hidden" aria-label={`${state.players.length} jogadores salvos`}>
-            {state.players.length}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="hidden rounded-full bg-white/15 px-3 py-1.5 text-xs sm:inline-flex">{state.players.length} jogador(es) nesta rodada</span>
+            <span className="inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-white/15 px-2 text-sm font-semibold sm:hidden" aria-label={`${state.players.length} jogadores nesta rodada`}>
+              {state.players.length}
+            </span>
+            <button type="button" onClick={handleClear} disabled={!state.players.length} className="min-h-10 rounded-lg border border-white/30 px-3 text-xs font-medium text-white hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50" aria-label="Apagar lista e times desta rodada">
+              Apagar rodada
+            </button>
+          </div>
         </div>
       </header>
 
@@ -69,8 +66,8 @@ export default function App() {
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-accent-yellow/20 text-sm font-bold text-accent-orange">1</span>
             <h2 className="text-base">Smart Paste</h2>
           </div>
-          <p className="mb-4 text-sm text-primary-dark/70">Cole a lista do WhatsApp. Confira os nomes e níveis encontrados antes de continuar.</p>
-          <SmartPaste onParseComplete={handleParseComplete} />
+          <p className="mb-4 text-sm text-primary-dark/70">Cole a lista do WhatsApp. Confira os nomes e níveis encontrados antes de continuar. Os dados ficam somente nesta página e são descartados ao atualizar ou fechar.</p>
+          <SmartPaste onParseComplete={handleParseComplete} onClear={handleClear} />
           {state.players.length > 0 && <PlayerEditor players={state.players} onPlayersChange={handlePlayersChange} />}
         </div>
 

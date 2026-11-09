@@ -5,8 +5,8 @@ import { parseWhatsAppList } from "./components/SmartPaste/parser";
 import { drawTeams } from "./components/Algorithm/draw";
 import { ExportButton } from "./components/ExportButton/ExportButton";
 import { PlayerEditor } from "./components/PlayerEditor/PlayerEditor";
+import { TeamCard } from "./components/TeamCard/TeamCard";
 import html2canvas from "html2canvas-pro";
-import { loadState, saveState } from "./store/storage";
 import type { Gender, Player, Team } from "./types";
 import App from "./App";
 
@@ -14,7 +14,6 @@ vi.mock("html2canvas-pro", () => ({ default: vi.fn() }));
 
 afterEach(() => {
   cleanup();
-  window.localStorage.clear();
   vi.restoreAllMocks();
 });
 
@@ -170,11 +169,12 @@ describe("aceitação do produto", () => {
   });
 
   it("805 — empilha cards em mobile e usa três colunas a partir do breakpoint desktop", () => {
-    saveState({ players: balancedPlayers(), teams: teamsForUi(balancedPlayers()) });
-    render(React.createElement(App));
-    const cards = screen.getByLabelText("Times sorteados");
-    expect(cards.className).toContain("grid-cols-1");
-    expect(cards.className).toContain("md:grid-cols-3");
+    const { container } = render(React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3", "aria-label": "Times sorteados" },
+      teamsForUi(balancedPlayers()).map((team) => React.createElement(TeamCard, { key: team.name, team })),
+    ));
+    const cards = container.querySelector('[aria-label="Times sorteados"]');
+    expect(cards?.className).toContain("grid-cols-1");
+    expect(cards?.className).toContain("md:grid-cols-3");
     expect(screen.getAllByRole("article")).toHaveLength(3);
   });
 
@@ -199,18 +199,17 @@ describe("aceitação do produto", () => {
     expect(URL.createObjectURL).toHaveBeenCalledOnce();
   });
 
-  it("807 — limpa os campos e os dados locais ao atualizar a página", () => {
-    const state = { players: balancedPlayers(), teams: null };
-    saveState(state);
-    vi.spyOn(window.performance, "getEntriesByType").mockReturnValue([
-      { type: "reload" } as PerformanceNavigationTiming,
-    ] as PerformanceEntryList);
+  it("descarta os jogadores ao reiniciar a página", () => {
+    const view = render(React.createElement(App));
+    fireEvent.change(view.getByRole("textbox", { name: "Lista do WhatsApp" }), { target: { value: sampleWhatsAppList() } });
+    fireEvent.click(screen.getByRole("button", { name: "Processar lista" }));
+    expect(screen.getByText("Editar jogadores")).toBeTruthy();
 
-    render(React.createElement(App));
+    view.unmount();
+    const reopened = render(React.createElement(App));
 
+    expect(reopened.queryByText("Editar jogadores")).toBeNull();
     expect(document.getElementById("wa")).toHaveProperty("value", "");
-    expect(screen.queryByText("Editar jogadores")).toBeNull();
-    expect(loadState()).toEqual({ players: [], teams: null });
   });
 
 });

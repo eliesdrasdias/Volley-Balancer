@@ -12,7 +12,15 @@ O fluxo cobre uma rodada do início ao fim:
 4. Sortear três times e conferir as métricas de equilíbrio.
 5. Exportar os cards como imagem JPEG.
 
-Não há API, servidor de aplicação ou banco de dados. O estado da rodada fica no `localStorage`; atualizar a página limpa a rodada para iniciar uma nova.
+Não há API, servidor de aplicação ou banco de dados implementados pelo projeto. A lista e os times ficam somente na memória da página atual; atualizar ou fechar a página descarta a rodada. A hospedagem estática ainda pode registrar dados técnicos de acesso conforme sua própria política.
+
+## Privacidade e uso dos dados
+
+O aplicativo processa nomes, função, nível e sexo informados pelo organizador. Esses dados existem na memória da página aberta; não são enviados por este código a uma API do projeto nem gravados em armazenamento persistente do navegador. A imagem exportada contém os nomes e deve ser compartilhada pelo organizador somente com o grupo pretendido. Não cole dados de pagamento, telefone, saúde ou outras informações que não sejam necessárias para montar os times.
+
+O botão **Apagar rodada** no cabeçalho (ou **Limpar lista e jogadores**) remove os dados da página imediatamente. Atualizar ou fechar a página também os descarta. A exportação é iniciada por ação do usuário e baixa um JPEG local. Evite exportar em dispositivos compartilhados.
+
+Para uso em grupo, o organizador deve explicar aos participantes que seus nomes e atributos serão usados para a montagem dos times, limitar o acesso à lista e às imagens e combinar a base legal adequada ao contexto. Este software, sozinho, não determina a base legal nem torna o tratamento automaticamente conforme à LGPD. A política da plataforma de hospedagem e a forma como o organizador coleta e compartilha a lista também precisam ser consideradas.
 
 ## Decisões técnicas
 
@@ -28,7 +36,7 @@ Cada time recebe um levantador e cinco atletas. A soma de níveis considera some
 
 ### Persistência e exportação
 
-- `localStorage` armazena jogadores e times durante a rodada. O estado carregado é validado antes de ser usado; um reload explícito limpa os dados para começar uma nova rodada.
+- Jogadores e times permanecem somente na memória da página aberta; recarregar inicia uma rodada vazia.
 - `html2canvas-pro` é carregado sob demanda ao exportar. A biblioteca captura os cards no navegador, e o app gera um JPEG com compressão progressiva para reduzir o tamanho do arquivo.
 - O algoritmo aceita uma fonte aleatória injetável, permitindo verificar resultados diferentes de forma reproduzível nos testes.
 
@@ -44,7 +52,6 @@ src/
 │   │   ├── parser.ts                 # parser e validação da lista
 │   │   └── SmartPaste.tsx            # entrada e prévia dos jogadores
 │   └── TeamCard/TeamCard.tsx         # apresentação de cada time
-├── store/storage.ts                  # leitura e gravação no localStorage
 ├── types/index.ts                    # modelo de jogador, time e estado
 ├── App.tsx                            # composição do fluxo da aplicação
 └── acceptance.test.ts                # testes de aceitação
@@ -78,7 +85,7 @@ npm run lint
 npm run build
 ```
 
-A suíte cobre parsing da amostra, regras de composição, equilíbrio de nível e gênero, variação entre sorteios, comportamento responsivo, exportação e persistência. Lint e build verificam estilo, tipos e bundle de produção.
+A suíte cobre parsing da amostra, regras de composição, equilíbrio de nível e gênero, variação entre sorteios, comportamento responsivo e exportação. Lint e build verificam estilo, tipos e bundle de produção.
 
 ## Amostra para validar o Smart Paste
 

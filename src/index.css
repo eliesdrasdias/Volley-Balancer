@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-base: #f8fafc;
+  --color-primary-dark: #0a1930;
+  --color-primary-blue: #004b8d;
+  --color-accent-yellow: #ffc107;
+  --color-accent-orange: #ff7b00;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-bg-base font-sans text-primary-dark antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+
+  button, input, textarea {
+    touch-action: manipulation;
+  }
+}

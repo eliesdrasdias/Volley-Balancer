@@ -48,15 +48,6 @@ export default function App() {
               <p className="text-xs text-white/80">Times de vôlei justos em 1 clique</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="hidden rounded-full bg-white/15 px-3 py-1.5 text-xs sm:inline-flex">{state.players.length} jogador(es) nesta rodada</span>
-            <span className="inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-white/15 px-2 text-sm font-semibold sm:hidden" aria-label={`${state.players.length} jogadores nesta rodada`}>
-              {state.players.length}
-            </span>
-            <button type="button" onClick={handleClear} disabled={!state.players.length} className="min-h-10 rounded-lg border border-white/30 px-3 text-xs font-medium text-white hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50" aria-label="Apagar lista e times desta rodada">
-              Apagar rodada
-            </button>
-          </div>
         </div>
       </header>
 

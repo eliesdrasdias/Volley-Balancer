@@ -54,7 +54,7 @@ export function parseWhatsAppList(text: string): ParsedData {
     if (heading(line, "athlete")) { active = "athlete"; continue; }
     if (isOtherSectionHeading(line)) { active = null; continue; }
     if (!active || ignoredLine(line)) continue;
-    sections[active].push(line.replace(/^\s*\d+[.)]\s*/, "").trim());
+    sections[active].push(line.replace(/^\s*\d+\s*[.)-]?\s*/, "").trim());
   }
 
   if (!sections.setter.length && !sections.athlete.length) {

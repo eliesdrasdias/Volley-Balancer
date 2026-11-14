@@ -80,7 +80,7 @@ export default function App() {
             <ul className="mt-1 list-inside list-disc">{drawWarnings.map((warning) => <li key={warning}>{warning}</li>)}</ul>
           </div>}
           {state.teams && <>
-            <div ref={teamsRef} className="mt-5 grid grid-cols-1 gap-4 bg-bg-base p-2 sm:p-3 md:grid-cols-3" aria-label="Times sorteados">
+            <div ref={teamsRef} className="mt-5 grid grid-cols-3 gap-4 bg-bg-base p-2 sm:p-3" aria-label="Times sorteados">
               {state.teams.map((team) => <TeamCard key={team.name} team={team} />)}
             </div>
             <ExportButton targetRef={teamsRef} />

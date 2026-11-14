@@ -28,6 +28,7 @@ export function ExportButton({ targetRef }: ExportButtonProps) {
         scale: 2,
         useCORS: true,
         logging: false,
+        windowWidth: 1200,
       });
       let blob = await canvasToBlob(canvas, 0.88);
       if (blob.size > 300 * 1024) blob = await canvasToBlob(canvas, 0.72);

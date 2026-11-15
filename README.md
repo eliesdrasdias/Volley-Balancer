@@ -1,55 +1,56 @@
 # Volley Balancer
 
-Aplicação web client-side para montar três times de vôlei a partir de uma lista colada do WhatsApp. O projeto combina parsing tolerante a texto informal, edição rápida de jogadores e um algoritmo de distribuição com regras explícitas de nível, gênero e função.
+Aplicação web para transformar uma lista de presença do WhatsApp em três times de vôlei equilibrados. O organizador cola a lista, revisa os dados dos jogadores, gera a distribuição e exporta os times como imagem — tudo direto no navegador.
+
+**Demonstração:** [volei.eliesdras.dev.br](https://volei.eliesdras.dev.br/)
 
 ## Visão geral
 
-O fluxo cobre uma rodada do início ao fim:
+O Volley Balancer resolve uma tarefa recorrente de quem organiza partidas: distribuir 18 pessoas em três times considerando levantadores, nível técnico e gênero, sem montar tudo manualmente.
 
-1. Colar a lista recebida no WhatsApp.
-2. Extrair levantadores e atletas, ignorando informações administrativas.
-3. Revisar sexo e nível técnico dos jogadores.
-4. Sortear três times e conferir as métricas de equilíbrio.
-5. Exportar os cards como imagem JPEG.
+1. Cole a lista recebida no WhatsApp.
+2. O parser reconhece levantadores e atletas e ignora informações administrativas comuns, como data, PIX, valor e links.
+3. Revise os nomes, busque jogadores pelo nome e ajuste gênero e nível técnico.
+4. Sorteie três times e confira os indicadores de equilíbrio.
+5. Exporte os cards em JPEG para compartilhar com o grupo.
 
-Não há API, servidor de aplicação ou banco de dados implementados pelo projeto. A lista e os times ficam somente na memória da página atual; atualizar ou fechar a página descarta a rodada. A hospedagem estática ainda pode registrar dados técnicos de acesso conforme sua própria política.
+O aplicativo funciona sem API ou banco de dados próprios. Os dados da rodada ficam na memória da página e são descartados ao atualizar ou fechar a aba.
 
-## Privacidade e uso dos dados
+## Funcionalidades
 
-O aplicativo processa nomes, função, nível e sexo informados pelo organizador. Esses dados existem na memória da página aberta; não são enviados por este código a uma API do projeto nem gravados em armazenamento persistente do navegador. A imagem exportada contém os nomes e deve ser compartilhada pelo organizador somente com o grupo pretendido. Não cole dados de pagamento, telefone, saúde ou outras informações que não sejam necessárias para montar os times.
-
-O botão **Apagar rodada** no cabeçalho (ou **Limpar lista e jogadores**) remove os dados da página imediatamente. Atualizar ou fechar a página também os descarta. A exportação é iniciada por ação do usuário e baixa um JPEG local. Evite exportar em dispositivos compartilhados.
-
-Para uso em grupo, o organizador deve explicar aos participantes que seus nomes e atributos serão usados para a montagem dos times, limitar o acesso à lista e às imagens e combinar a base legal adequada ao contexto. Este software, sozinho, não determina a base legal nem torna o tratamento automaticamente conforme à LGPD. A política da plataforma de hospedagem e a forma como o organizador coleta e compartilha a lista também precisam ser consideradas.
+- **Entrada tolerante a listas reais:** reconhece as seções `Levantadores` e `Atletas`, níveis no formato `Ana 2`, `Ana - 2` ou `Ana (2)`, e ignora linhas administrativas frequentes.
+- **Revisão antes do sorteio:** sinaliza contagens incorretas, nomes duplicados e níveis ausentes ou inválidos. O editor permite ajustar gênero e nível individualmente e localizar pessoas pela busca.
+- **Distribuição com restrições:** valida a composição de 3 levantadores e 15 atletas, distribui atletas por nível com snake draft e avalia as combinações de gênero e as permutações dos levantadores para equilibrar os times.
+- **Indicadores claros:** cada time mostra a composição e a soma de níveis dos atletas. Diferenças acima da meta aparecem como avisos para revisão.
+- **Exportação local:** captura os cards no navegador e gera um JPEG otimizado, sem enviar a imagem para um serviço do projeto.
+- **Layout responsivo e acessível:** interface adaptada a telas menores, com controles semânticos, estados acessíveis e alvos de toque confortáveis.
 
 ## Decisões técnicas
 
 ### Parser de texto
 
-O parser normaliza finais de linha, reconhece as seções `Levantadores` e `Atletas` e ignora linhas como data, PIX, chave, valor e links. Nível técnico só se aplica a atletas: aceita sufixos como `Ana 2`, `Ana - 2` e `Ana (2)`. Nível ausente recebe valor padrão 3 com aviso. A entrada é validada para exatamente três levantadores e quinze atletas, e nomes duplicados são sinalizados.
+O parser normaliza finais de linha, reconhece títulos de seção mesmo com formatação comum do WhatsApp e desconsidera linhas administrativas e listas de espera. O nível técnico se aplica somente a atletas; quando falta, o valor padrão é 3 e um aviso é exibido. A rodada requer exatamente três levantadores e quinze atletas, e nomes repetidos são sinalizados para conferência.
 
 ### Sorteio com restrições
 
-O sorteio valida 18 jogadores (3 levantadores e 15 atletas) antes de distribuir. Atletas são organizados por nível e distribuídos em snake draft. Dentro de cada nível, o algoritmo avalia combinações de posições por gênero e as seis permutações possíveis dos levantadores; escolhe uma distribuição com a menor diferença possível na quantidade de mulheres. Entre soluções igualmente equilibradas, embaralha jogadores e seleciona uma alternativa aleatória.
+O algoritmo valida a quantidade e o papel dos jogadores antes de distribuir. Agrupa os atletas pelos níveis de 1 a 4 e usa snake draft para espalhar cada grupo entre os times. Em seguida, avalia as combinações de gênero dentro de cada nível e as seis permutações possíveis dos levantadores; prioriza a menor diferença na quantidade de mulheres por time e sorteia entre opções igualmente equilibradas.
 
-Cada time recebe um levantador e cinco atletas. A soma de níveis considera somente atletas; diferenças maiores que um ponto e distribuições de gênero fora da tolerância aparecem como avisos no resultado.
+Cada time recebe um levantador e cinco atletas. A soma de níveis considera somente atletas. O resultado informa quando a diferença entre as somas de nível ou entre as contagens de gênero passa de um jogador/ponto.
 
-### Persistência e exportação
+### Privacidade e exportação
 
-- Jogadores e times permanecem somente na memória da página aberta; recarregar inicia uma rodada vazia.
-- `html2canvas-pro` é carregado sob demanda ao exportar. A biblioteca captura os cards no navegador, e o app gera um JPEG com compressão progressiva para reduzir o tamanho do arquivo.
-- O algoritmo aceita uma fonte aleatória injetável, permitindo verificar resultados diferentes de forma reproduzível nos testes.
+Os nomes, papéis, gêneros e níveis são mantidos apenas na memória da página aberta. O código do projeto não envia esses dados a uma API nem os grava em armazenamento persistente do navegador. Atualizar ou fechar a página descarta a rodada. A exportação é iniciada pelo organizador e baixa um JPEG local contendo os nomes; compartilhe-o somente com o grupo pretendido. A hospedagem estática pode registrar dados técnicos de acesso conforme sua própria política.
 
 ## Arquitetura
 
 ```text
 src/
 ├── components/
-│   ├── Algorithm/draw.ts             # validação e distribuição dos times
+│   ├── Algorithm/draw.ts             # validação, distribuição e métricas
 │   ├── ExportButton/ExportButton.tsx # captura e download do JPEG
-│   ├── PlayerEditor/PlayerEditor.tsx # ajustes de sexo e nível
+│   ├── PlayerEditor/PlayerEditor.tsx # busca e edição dos jogadores
 │   ├── SmartPaste/
-│   │   ├── parser.ts                 # parser e validação da lista
+│   │   ├── parser.ts                 # parsing e validação da lista
 │   │   └── SmartPaste.tsx            # entrada e prévia dos jogadores
 │   └── TeamCard/TeamCard.tsx         # apresentação de cada time
 ├── types/index.ts                    # modelo de jogador, time e estado
@@ -85,11 +86,11 @@ npm run lint
 npm run build
 ```
 
-A suíte cobre parsing da amostra, regras de composição, equilíbrio de nível e gênero, variação entre sorteios, comportamento responsivo e exportação. Lint e build verificam estilo, tipos e bundle de produção.
+A suíte de aceitação cobre parsing, regras de composição, equilíbrio de nível e gênero, variação entre sorteios, comportamento responsivo e exportação. Os comandos também permitem executar lint e gerar o bundle de produção.
 
 ## Amostra para validar o Smart Paste
 
-Copie a lista abaixo para o campo **Lista do WhatsApp**. O parser deve ignorar os dados de pagamento e reconhecer 3 levantadores e 15 atletas.
+Cole a lista abaixo no campo **Lista do WhatsApp**. O parser deve ignorar os dados administrativos e reconhecer 3 levantadores e 15 atletas.
 
 <details>
 <summary>Abrir amostra de WhatsApp</summary>
@@ -125,4 +126,4 @@ Rafael Duarte 3
 
 </details>
 
-Os níveis vão de 1 (mais avançado) a 4 (iniciante). Como o texto não informa sexo, os jogadores são inicialmente classificados como M; ajuste essa informação no editor antes do sorteio.
+Os níveis vão de 1 (mais avançado) a 4 (iniciante). Como a lista não informa gênero, o parser inicia todos como M; ajuste essa informação no editor antes de sortear para que o algoritmo possa equilibrar essa dimensão.
